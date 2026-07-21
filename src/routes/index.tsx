@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { AlertCircle, Send, Upload } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { BaltazzarFooter } from "@/components/BaltazzarFooter";
-import { supabase } from "@/integrations/supabase/client";
+import { submitFeedback } from "@/lib/feedback.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,6 +44,7 @@ function validateClientCode(code: string) {
 
 function FeedbackFormPage() {
   const navigate = useNavigate();
+  const submit = useServerFn(submitFeedback);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientCodeError, setClientCodeError] = useState("");
@@ -97,7 +99,9 @@ function FeedbackFormPage() {
     const loading = toast.loading("Enviando feedback...");
 
     try {
-      const filePaths: string[] = [];
+      // Read file contents into base64 so the server function handles both
+      // Storage upload AND Notion upload in one authenticated call.
+      const attachments: { name: string; type: string; base64: string; size: number }[] = [];
       if (formData.files.length > 0) {
         setUploadProgress(
           formData.files.map((f) => ({
@@ -107,28 +111,18 @@ function FeedbackFormPage() {
             status: "uploading" as const,
           })),
         );
-
         for (let i = 0; i < formData.files.length; i++) {
           const file = formData.files[i];
-          const ext = file.name.split(".").pop();
-          const path = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from("feedback-files")
-            .upload(path, file, { cacheControl: "3600", upsert: false });
-
-          if (uploadError) {
-            setUploadProgress((prev) =>
-              prev.map((p, idx) =>
-                idx === i
-                  ? { ...p, status: "error", error: uploadError.message }
-                  : p,
-              ),
-            );
-            throw new Error(`Falha no upload: ${uploadError.message}`);
-          }
-
-          filePaths.push(path);
+          const buf = await file.arrayBuffer();
+          let bin = "";
+          const bytes = new Uint8Array(buf);
+          for (let j = 0; j < bytes.length; j++) bin += String.fromCharCode(bytes[j]);
+          attachments.push({
+            name: file.name,
+            type: file.type,
+            base64: btoa(bin),
+            size: file.size,
+          });
           setUploadProgress((prev) =>
             prev.map((p, idx) =>
               idx === i ? { ...p, progress: 100, status: "completed" } : p,
@@ -139,23 +133,26 @@ function FeedbackFormPage() {
 
       const selected = categories.find((c) => c.value === formData.category);
 
-      const { error: insertError } = await supabase.from("feedback").insert({
-        client_code: formData.clientCode,
-        name: formData.name,
-        email: formData.email,
-        type: "feedback",
-        subject: formData.subject,
-        category: selected?.label ?? formData.category,
-        message: formData.message,
-        file_urls: filePaths,
+      const result = await submit({
+        data: {
+          clientCode: formData.clientCode,
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          category: selected?.label ?? formData.category,
+          message: formData.message,
+          attachments,
+        },
       });
 
-      if (insertError) {
-        throw new Error(`Erro ao salvar: ${insertError.message}`);
-      }
-
       toast.dismiss(loading);
-      toast.success("Feedback enviado com sucesso!");
+      if (result.notionError) {
+        toast.warning(
+          "Feedback salvo, mas houve um erro ao criar a tarefa no Notion. O time será notificado.",
+        );
+      } else {
+        toast.success("Feedback enviado com sucesso!");
+      }
       navigate({ to: "/thank-you" });
     } catch (error) {
       toast.dismiss(loading);
