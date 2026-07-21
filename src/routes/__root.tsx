@@ -77,29 +77,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BALTAZZAR — Sistema de Solicitações" },
+      { title: "Feedbacks — BALTAZZAR" },
       {
         name: "description",
         content:
-          "Ajude-nos a melhorar seu sistema. Compartilhe seu feedback sobre nossos produtos e serviços.",
+          "Envie sua solicitação ou feedback para a equipe BALTAZZAR. Selecione o tipo de atendimento e descreva sua necessidade.",
       },
       { name: "author", content: "BALTAZZAR" },
-      { property: "og:title", content: "BALTAZZAR — Sistema de Solicitações" },
+      { property: "og:title", content: "Feedbacks — BALTAZZAR" },
       {
         property: "og:description",
         content:
-          "Ajude-nos a melhorar seu sistema. Compartilhe seu feedback sobre nossos produtos e serviços.",
+          "Envie sua solicitação ou feedback para a equipe BALTAZZAR. Selecione o tipo de atendimento e descreva sua necessidade.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Feedbacks — BALTAZZAR" },
+      { name: "twitter:description", content: "Envie sua solicitação ou feedback para a equipe BALTAZZAR. Selecione o tipo de atendimento e descreva sua necessidade." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/InFZrtqu7hUSWwlCqN81bvjVoxq2/social-images/social-1784639574058-site-completo.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/InFZrtqu7hUSWwlCqN81bvjVoxq2/social-images/social-1784639574058-site-completo.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      {
-        rel: "icon",
-        type: "image/png",
-        href: "https://sebastianbaltazar.com.br/wp-content/uploads/LOGO-ATUALIZACAO.png",
-      },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",

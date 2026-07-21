@@ -9,7 +9,7 @@ import { submitFeedback } from "@/lib/feedback.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Formulário de Feedback — BALTAZZAR" },
+      { title: "Feedbacks — BALTAZZAR" },
       {
         name: "description",
         content:
