@@ -216,8 +216,9 @@ export const listFeedback = createServerFn({ method: "POST" })
     if (data.from) q = q.gte("created_at", data.from);
     if (data.to) q = q.lte("created_at", data.to);
     if (data.hasAttachments === "yes")
-      q = q.not("file_urls", "eq", "{}");
-    if (data.hasAttachments === "no") q = q.eq("file_urls", "{}");
+      q = q.not("file_urls", "eq", "{}" as unknown as string[]);
+    if (data.hasAttachments === "no")
+      q = q.filter("file_urls", "eq", "{}");
 
     if (data.sort === "created_asc") q = q.order("created_at", { ascending: true });
     else if (data.sort === "name_asc") q = q.order("name", { ascending: true });
