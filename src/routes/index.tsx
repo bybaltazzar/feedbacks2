@@ -3,6 +3,7 @@ import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { AlertCircle, Send, Upload } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { BaltazzarFooter } from "@/components/BaltazzarFooter";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -96,8 +97,7 @@ function FeedbackFormPage() {
     const loading = toast.loading("Enviando feedback...");
 
     try {
-      // Simula progresso de upload — a integração de webhook/Supabase
-      // preserva a mesma estrutura do projeto original e será plugada aqui.
+      const filePaths: string[] = [];
       if (formData.files.length > 0) {
         setUploadProgress(
           formData.files.map((f) => ({
@@ -107,8 +107,28 @@ function FeedbackFormPage() {
             status: "uploading" as const,
           })),
         );
+
         for (let i = 0; i < formData.files.length; i++) {
-          await new Promise((r) => setTimeout(r, 300));
+          const file = formData.files[i];
+          const ext = file.name.split(".").pop();
+          const path = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("feedback-files")
+            .upload(path, file, { cacheControl: "3600", upsert: false });
+
+          if (uploadError) {
+            setUploadProgress((prev) =>
+              prev.map((p, idx) =>
+                idx === i
+                  ? { ...p, status: "error", error: uploadError.message }
+                  : p,
+              ),
+            );
+            throw new Error(`Falha no upload: ${uploadError.message}`);
+          }
+
+          filePaths.push(path);
           setUploadProgress((prev) =>
             prev.map((p, idx) =>
               idx === i ? { ...p, progress: 100, status: "completed" } : p,
@@ -117,7 +137,22 @@ function FeedbackFormPage() {
         }
       }
 
-      await new Promise((r) => setTimeout(r, 400));
+      const selected = categories.find((c) => c.value === formData.category);
+
+      const { error: insertError } = await supabase.from("feedback").insert({
+        client_code: formData.clientCode,
+        name: formData.name,
+        email: formData.email,
+        type: "feedback",
+        subject: formData.subject,
+        category: selected?.label ?? formData.category,
+        message: formData.message,
+        file_urls: filePaths,
+      });
+
+      if (insertError) {
+        throw new Error(`Erro ao salvar: ${insertError.message}`);
+      }
 
       toast.dismiss(loading);
       toast.success("Feedback enviado com sucesso!");
@@ -127,6 +162,7 @@ function FeedbackFormPage() {
       toast.error(
         error instanceof Error ? error.message : "Erro ao enviar. Tente novamente.",
       );
+      console.error("Feedback submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
