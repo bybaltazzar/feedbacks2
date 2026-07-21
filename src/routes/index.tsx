@@ -44,6 +44,7 @@ function validateClientCode(code: string) {
 
 function FeedbackFormPage() {
   const navigate = useNavigate();
+  const submit = useServerFn(submitFeedback);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientCodeError, setClientCodeError] = useState("");
