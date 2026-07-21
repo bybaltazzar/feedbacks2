@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      feedback: {
+        Row: {
+          category: string
+          client_code: string
+          created_at: string
+          email: string
+          file_urls: string[]
+          id: string
+          message: string
+          name: string
+          other_category: string | null
+          subject: string
+          tarefa_id: string | null
+          type: string
+        }
+        Insert: {
+          category: string
+          client_code: string
+          created_at?: string
+          email: string
+          file_urls?: string[]
+          id?: string
+          message: string
+          name: string
+          other_category?: string | null
+          subject: string
+          tarefa_id?: string | null
+          type?: string
+        }
+        Update: {
+          category?: string
+          client_code?: string
+          created_at?: string
+          email?: string
+          file_urls?: string[]
+          id?: string
+          message?: string
+          name?: string
+          other_category?: string | null
+          subject?: string
+          tarefa_id?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
