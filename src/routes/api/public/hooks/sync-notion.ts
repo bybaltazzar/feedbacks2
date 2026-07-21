@@ -84,10 +84,19 @@ export const Route = createFileRoute("/api/public/hooks/sync-notion")({
             queryNotionDatabase(notionToken, NOTION_DATABASES.TASKS),
           ]);
 
+          // As tabelas `projects` e `tasks` ainda não existem neste projeto;
+          // criamos o alias `db` para preservar a estrutura do webhook original
+          // do Bolt. Basta rodar a migração dessas tabelas para ativar o upsert.
+          const db = supabaseAdmin as unknown as {
+            from: (table: string) => {
+              upsert: (row: Record<string, unknown>) => Promise<unknown>;
+            };
+          };
+
           let projectCount = 0;
           for (const page of projects.results) {
             const p = page.properties ?? {};
-            await supabaseAdmin.from("projects").upsert({
+            await db.from("projects").upsert({
               notion_id: page.id,
               name: p.Name?.title?.[0]?.plain_text ?? null,
               status: p.Status?.status?.name ?? null,
@@ -100,7 +109,7 @@ export const Route = createFileRoute("/api/public/hooks/sync-notion")({
           let taskCount = 0;
           for (const page of tasks.results) {
             const p = page.properties ?? {};
-            await supabaseAdmin.from("tasks").upsert({
+            await db.from("tasks").upsert({
               notion_id: page.id,
               title: p.Name?.title?.[0]?.plain_text ?? null,
               status: p.Status?.status?.name ?? null,
