@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { AlertCircle, Send, Upload } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { BaltazzarFooter } from "@/components/BaltazzarFooter";
-import { supabase } from "@/integrations/supabase/client";
+import { submitFeedback } from "@/lib/feedback.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
