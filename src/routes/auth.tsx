@@ -27,6 +27,10 @@ function AuthPage() {
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin + "/auth",
+        extraParams: {
+          hd: "baltazzar.com.br",
+          prompt: "select_account",
+        },
       });
       if (result.error) {
         toast.error("Falha ao entrar: " + result.error.message);
