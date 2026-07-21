@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThankYouRouteImport } from './routes/thank-you'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicHooksSyncNotionRouteImport } from './routes/api/public/hooks/sync-notion'
 
 const ThankYouRoute = ThankYouRouteImport.update({
   id: '/thank-you',
@@ -23,41 +22,31 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksSyncNotionRoute =
-  ApiPublicHooksSyncNotionRouteImport.update({
-    id: '/api/public/hooks/sync-notion',
-    path: '/api/public/hooks/sync-notion',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/thank-you': typeof ThankYouRoute
-  '/api/public/hooks/sync-notion': typeof ApiPublicHooksSyncNotionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/thank-you': typeof ThankYouRoute
-  '/api/public/hooks/sync-notion': typeof ApiPublicHooksSyncNotionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/thank-you': typeof ThankYouRoute
-  '/api/public/hooks/sync-notion': typeof ApiPublicHooksSyncNotionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/thank-you' | '/api/public/hooks/sync-notion'
+  fullPaths: '/' | '/thank-you'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/thank-you' | '/api/public/hooks/sync-notion'
-  id: '__root__' | '/' | '/thank-you' | '/api/public/hooks/sync-notion'
+  to: '/' | '/thank-you'
+  id: '__root__' | '/' | '/thank-you'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ThankYouRoute: typeof ThankYouRoute
-  ApiPublicHooksSyncNotionRoute: typeof ApiPublicHooksSyncNotionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,20 +65,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/sync-notion': {
-      id: '/api/public/hooks/sync-notion'
-      path: '/api/public/hooks/sync-notion'
-      fullPath: '/api/public/hooks/sync-notion'
-      preLoaderRoute: typeof ApiPublicHooksSyncNotionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ThankYouRoute: ThankYouRoute,
-  ApiPublicHooksSyncNotionRoute: ApiPublicHooksSyncNotionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
