@@ -272,12 +272,16 @@ function FeedbackFormPage() {
                   <textarea
                     placeholder="Descreva seu feedback detalhadamente..."
                     value={formData.message}
+                    maxLength={10000}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, message: e.target.value }))
+                      setFormData((prev) => ({ ...prev, message: e.target.value.slice(0, 10000) }))
                     }
                     required
                     className="w-full p-4 border-2 border-areia/60 rounded-xl bg-background/60 h-32 resize-none transition-all focus:outline-none focus:ring-2 focus:ring-terracota/50 focus:border-terracota"
                   />
+                  <p className="text-xs text-brand-black/60 mt-1 text-right">
+                    {formData.message.length.toLocaleString("pt-BR")} / 10.000 caracteres
+                  </p>
                 </Field>
 
                 <div className="space-y-4">
