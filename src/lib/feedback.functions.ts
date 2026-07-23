@@ -69,6 +69,8 @@ export const submitFeedback = createServerFn({ method: "POST" })
 
     // 3. Sync to Notion (never blocks the user response failure-wise: we
     //    catch and record error in the feedback row so admin panel can retry).
+    let notionTaskUrl: string | null = null;
+    let notionErrorMsg: string | null = null;
     try {
       const result = await syncFeedbackToNotionInternal(feedbackId, {
         clientCode: data.clientCode,
@@ -79,16 +81,60 @@ export const submitFeedback = createServerFn({ method: "POST" })
         email: data.email,
         uploaded,
       });
-      return { ok: true, feedbackId, notionTaskUrl: result.taskUrl };
+      notionTaskUrl = result.taskUrl;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      notionErrorMsg = err instanceof Error ? err.message : String(err);
       await supabaseAdmin
         .from("feedback")
-        .update({ notion_status: "error", notion_error: msg })
+        .update({ notion_status: "error", notion_error: notionErrorMsg })
         .eq("id", feedbackId);
-      // Return ok=true anyway; UI still navigates to thank-you but reports issue
-      return { ok: true, feedbackId, notionError: msg };
     }
+
+    // 4. Send emails (best-effort, never blocks response)
+    try {
+      const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+
+      // Confirmation to submitter
+      await sendTemplateEmail("feedback-confirmation", data.email, {
+        templateData: {
+          name: data.name,
+          subject: data.subject,
+          category: data.category,
+          clientCode: data.clientCode,
+        },
+        idempotencyKey: `feedback-confirm-${feedbackId}`,
+      });
+
+      // Admin notification: send to Lucas and BCC-equivalent to Sebastian
+      const adminData = {
+        requesterName: data.name,
+        requesterEmail: data.email,
+        clientCode: data.clientCode,
+        category: data.category,
+        subject: data.subject,
+        message: data.message,
+        notionUrl: notionTaskUrl,
+        notionStatus: notionErrorMsg ? "error" : "sent",
+        hasAttachments: uploaded.length > 0,
+      };
+      await sendTemplateEmail("feedback-admin-notification", "lucas@baltazzar.com.br", {
+        templateData: adminData,
+        idempotencyKey: `feedback-notify-lucas-${feedbackId}`,
+      });
+      await sendTemplateEmail("feedback-admin-notification", "sebastian@baltazzar.com.br", {
+        templateData: adminData,
+        idempotencyKey: `feedback-notify-sebastian-${feedbackId}`,
+      });
+    } catch (err) {
+      console.error("[feedback] email send failed", err);
+    }
+
+    return {
+      ok: true,
+      feedbackId,
+      notionTaskUrl: notionTaskUrl ?? undefined,
+      notionError: notionErrorMsg ?? undefined,
+    };
   });
 
 async function syncFeedbackToNotionInternal(
