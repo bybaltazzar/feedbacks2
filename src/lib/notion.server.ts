@@ -178,15 +178,35 @@ function isVideoMime(m: string) {
   return m.startsWith("video/");
 }
 
+const RT_LIMIT = 1900; // safe under Notion's 2000-char rich_text limit
+
+function chunkText(s: string, size = RT_LIMIT): string[] {
+  if (!s) return [""];
+  const out: string[] = [];
+  for (let i = 0; i < s.length; i += size) out.push(s.slice(i, i + size));
+  return out;
+}
+
+function paragraphBlocks(text: string) {
+  return chunkText(text).map((chunk) => ({
+    object: "block",
+    type: "paragraph",
+    paragraph: {
+      rich_text: [{ type: "text", text: { content: chunk } }],
+    },
+  }));
+}
+
 export async function createTaskInNotion(input: CreateTaskInput): Promise<NotionPage> {
   const properties: Record<string, any> = {
     Tarefa: {
       title: [{ type: "text", text: { content: input.title.slice(0, 2000) } }],
     },
     Descrição: {
-      rich_text: [{ type: "text", text: { content: input.descricao.slice(0, 2000) } }],
+      rich_text: [{ type: "text", text: { content: input.descricao.slice(0, 1900) } }],
     },
     "Email Solicitante": { email: input.requesterEmail },
+    Status: { status: { name: "Backlog" } },
   };
   if (input.projectPageId) {
     properties["Projeto"] = { relation: [{ id: input.projectPageId }] };
@@ -202,20 +222,14 @@ export async function createTaskInNotion(input: CreateTaskInput): Promise<Notion
     };
   }
 
-  // Body: descrição + metadados + anexos como blocos ricos
+  // Body: descrição (chunked) + metadados + anexos como blocos ricos
   const children: any[] = [
     {
       object: "block",
       type: "heading_2",
       heading_2: { rich_text: [{ type: "text", text: { content: "Solicitação" } }] },
     },
-    {
-      object: "block",
-      type: "paragraph",
-      paragraph: {
-        rich_text: [{ type: "text", text: { content: input.descricao } }],
-      },
-    },
+    ...paragraphBlocks(input.descricao),
     {
       object: "block",
       type: "bulleted_list_item",
