@@ -14,7 +14,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as ApiPublicDebugNotionRouteImport } from './routes/api/public/debug-notion'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const ThankYouRoute = ThankYouRouteImport.update({
@@ -41,11 +40,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicDebugNotionRoute = ApiPublicDebugNotionRouteImport.update({
-  id: '/api/public/debug-notion',
-  path: '/api/public/debug-notion',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -58,7 +52,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/thank-you': typeof ThankYouRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/api/public/debug-notion': typeof ApiPublicDebugNotionRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
@@ -66,7 +59,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/thank-you': typeof ThankYouRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/api/public/debug-notion': typeof ApiPublicDebugNotionRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
@@ -76,7 +68,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/thank-you': typeof ThankYouRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/api/public/debug-notion': typeof ApiPublicDebugNotionRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
@@ -86,7 +77,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/thank-you'
     | '/admin'
-    | '/api/public/debug-notion'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -94,7 +84,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/thank-you'
     | '/admin'
-    | '/api/public/debug-notion'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
@@ -103,7 +92,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/thank-you'
     | '/_authenticated/admin'
-    | '/api/public/debug-notion'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
@@ -112,7 +100,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ThankYouRoute: typeof ThankYouRoute
-  ApiPublicDebugNotionRoute: typeof ApiPublicDebugNotionRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
@@ -153,13 +140,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/debug-notion': {
-      id: '/api/public/debug-notion'
-      path: '/api/public/debug-notion'
-      fullPath: '/api/public/debug-notion'
-      preLoaderRoute: typeof ApiPublicDebugNotionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -186,7 +166,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ThankYouRoute: ThankYouRoute,
-  ApiPublicDebugNotionRoute: ApiPublicDebugNotionRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport

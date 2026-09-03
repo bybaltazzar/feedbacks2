@@ -197,6 +197,34 @@ function paragraphBlocks(text: string) {
   }));
 }
 
+export const TIPO_DEMANDA_OPTIONS = [
+  "Interface",
+  "Lógica de Automação",
+  "Banco de Dados",
+  "Performance",
+  "Comunicação",
+  "Nova Automação",
+  "Bug / Erro",
+  "Dificuldade de Uso",
+  "Alteração de Recurso já criado",
+  "Nova solicitação",
+] as const;
+
+function normalize(s: string) {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+/** Maps a form category to a valid "Tipo de Demanda" option (multi_select). */
+export function resolveTipoDemanda(categoria: string): string {
+  const target = normalize(categoria);
+  const match = TIPO_DEMANDA_OPTIONS.find((o) => normalize(o) === target);
+  return match ?? "Nova solicitação";
+}
+
 export async function createTaskInNotion(input: CreateTaskInput): Promise<NotionPage> {
   const properties: Record<string, any> = {
     Tarefa: {
@@ -207,7 +235,11 @@ export async function createTaskInNotion(input: CreateTaskInput): Promise<Notion
     },
     "Email Solicitante": { email: input.requesterEmail },
     Status: { status: { name: "Backlog" } },
+    "Tipo de Demanda": {
+      multi_select: [{ name: resolveTipoDemanda(input.categoria) }],
+    },
   };
+
   if (input.projectPageId) {
     properties["Projeto"] = { relation: [{ id: input.projectPageId }] };
   }
