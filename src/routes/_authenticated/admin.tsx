@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -23,6 +23,9 @@ import {
 import { claimFirstAdmin } from "@/lib/admin-bootstrap.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  beforeLoad: () => {
+    throw redirect({ href: "https://projetos.baltazzar.com.br" });
+  },
   component: AdminPage,
 });
 

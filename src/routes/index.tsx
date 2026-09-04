@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { AlertCircle, Send, Upload } from "lucide-react";
@@ -17,6 +17,9 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  beforeLoad: () => {
+    throw redirect({ href: "https://projetos.baltazzar.com.br/feedback" });
+  },
   component: FeedbackFormPage,
 });
 
